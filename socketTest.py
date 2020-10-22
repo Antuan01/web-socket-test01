@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-# WS server example that synchronizes state across clients
-
 import asyncio
 import json
 import logging
@@ -13,6 +9,7 @@ STATE = {"value": 0}
 
 USERS = set()
 
+SUBS = set()
 
 def state_event():
     return json.dumps({"type": "state", **STATE})
@@ -21,6 +18,15 @@ def state_event():
 def users_event():
     return json.dumps({"type": "users", "count": len(USERS)})
 
+def new_user(name):
+    return json.dumps({"type": "new", "message": name})
+
+async def welcome_user(name: str):
+    #if USERS:
+    if SUBS:
+        message = new_user(name)
+        await asyncio.wait([sub[0].send(message) for sub in SUBS])
+        #await asyncio.wait([user.send(message) for user in USERS])
 
 async def notify_state():
     if USERS:  # asyncio.wait doesn't accept an empty list
@@ -43,6 +49,11 @@ async def unregister(websocket):
     USERS.remove(websocket)
     await notify_users()
 
+async def subscribe(websocket, name):
+    #print(name)
+    SUBS.add((websocket, name))
+    await welcome_user(name)
+
 
 async def counter(websocket, path):
     # register(websocket) sends user_event() to websocket
@@ -57,6 +68,8 @@ async def counter(websocket, path):
             elif data["action"] == "plus":
                 STATE["value"] += 1
                 await notify_state()
+            elif data["action"] == "subscribe":
+                await subscribe(websocket, data["name"])
             else:
                 logging.error("unsupported event: {}", data)
     finally:

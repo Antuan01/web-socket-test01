@@ -15,16 +15,10 @@ USERS = set()
 
 
 def state_event():
-    print(json.dumps({"type": "state", **STATE}))
-    for user in USERS:
-        print(user)
     return json.dumps({"type": "state", **STATE})
 
 
 def users_event():
-    print(USERS)
-    print(json.dumps({"type": "users", "count": len(USERS)}))
-
     return json.dumps({"type": "users", "count": len(USERS)})
 
 
@@ -51,8 +45,6 @@ async def unregister(websocket):
 
 
 async def counter(websocket, path):
-    print(websocket)
-    print(path)
     # register(websocket) sends user_event() to websocket
     await register(websocket)
     try:

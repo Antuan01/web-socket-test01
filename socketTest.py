@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import websockets
+import redis 
 
 logging.basicConfig()
 
@@ -44,7 +45,6 @@ async def register(websocket):
     USERS.add(websocket)
     await notify_users()
 
-
 async def unregister(websocket):
     USERS.remove(websocket)
     await notify_users()
@@ -53,7 +53,6 @@ async def subscribe(websocket, name):
     #print(name)
     SUBS.add((websocket, name))
     await welcome_user(name)
-
 
 async def counter(websocket, path):
     # register(websocket) sends user_event() to websocket

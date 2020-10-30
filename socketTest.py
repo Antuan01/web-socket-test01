@@ -15,7 +15,6 @@ SUBS = set()
 def state_event():
     return json.dumps({"type": "state", **STATE})
 
-
 def users_event():
     return json.dumps({"type": "users", "count": len(USERS)})
 
@@ -34,12 +33,10 @@ async def notify_state():
         message = state_event()
         await asyncio.wait([user.send(message) for user in USERS])
 
-
 async def notify_users():
     if USERS:  # asyncio.wait doesn't accept an empty list
         message = users_event()
         await asyncio.wait([user.send(message) for user in USERS])
-
 
 async def register(websocket):
     USERS.add(websocket)
@@ -50,17 +47,16 @@ async def unregister(websocket):
     await notify_users()
 
 async def subscribe(websocket, name):
-    #print(name)
     SUBS.add((websocket, name))
     await welcome_user(name)
 
 async def counter(websocket, path):
-    # register(websocket) sends user_event() to websocket
     await register(websocket)
     try:
         await websocket.send(state_event())
         async for message in websocket:
             data = json.loads(message)
+            print(data)
             if data["action"] == "minus":
                 STATE["value"] -= 1
                 await notify_state()
@@ -73,7 +69,6 @@ async def counter(websocket, path):
                 logging.error("unsupported event: {}", data)
     finally:
         await unregister(websocket)
-
 
 start_server = websockets.serve(counter, "localhost", 6789)
 

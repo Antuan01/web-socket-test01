@@ -6,4 +6,14 @@ services:
         restart: always
         ports:
             - 6379:6379
+    db:
+        image: mariadb
+        environment:
+            MYSQL_ROOT_PASSWORD: nautna
+            MYSQL_DATABASE: taskdb
+            MYSQL_USER: antuan
+            MYSQL_PASSWORD: nautna
+        ports:
+            - 3306:3306
 
+    
